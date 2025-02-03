@@ -21,6 +21,9 @@ public class Post {
     private String title;
     private String content;
 
+    @Column(nullable = false)
+    private boolean deleted = false;
+
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)
     private Author author; // Relación con Author

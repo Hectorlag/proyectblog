@@ -21,6 +21,9 @@ public class Author {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private boolean deleted = false;
+
     @OneToOne
     @JoinColumn(name = "user_id", unique = true, nullable = false)
     private UserSec user; // Relación con UserSec

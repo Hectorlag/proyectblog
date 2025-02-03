@@ -19,4 +19,7 @@ public class Permission {
     private Long id;
     @Column(unique = true, nullable = false)
     private String permissionName;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
 }

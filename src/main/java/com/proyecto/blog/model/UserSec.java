@@ -28,6 +28,9 @@ public class UserSec {
     private boolean accountNotExpired;
     private boolean credentialNotExpired;
 
+    @Column(nullable = false)
+    private boolean deleted = false;
+
     //Usamos set porque no admite repetidos
     //List permite repetidos
 

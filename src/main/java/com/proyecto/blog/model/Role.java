@@ -22,6 +22,9 @@ public class Role {
     private Long id;
     private String role;
 
+    @Column(nullable = false)
+    private boolean deleted = false;
+
     //Usamos Set porque no permite repetidos
     //List permite repetidos
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
