@@ -36,7 +36,7 @@ public class UserService implements IUserSecService{
     public UserSec updateUserSec(Long id, UserSec userSecDetails) {
         // Buscar el UserSec por id
         UserSec existingUserSec = userSecRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("UserSec no encontrado con id: " + id));
+                .orElseThrow(() -> new RuntimeException("UserSec not found with id: " + id));
 
         // Actualizar los detalles
         existingUserSec.setUsername(userSecDetails.getUsername());
@@ -54,7 +54,7 @@ public class UserService implements IUserSecService{
     public void deleteUserSec(Long id) {
         // Verificar si el UserSec existe antes de eliminarlo
         UserSec userSec = userSecRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("UserSec no encontrado con id: " + id));
+                .orElseThrow(() -> new RuntimeException("UserSec not found with id: " + id));
 
         // Eliminar el UserSec
         userSecRepository.delete(userSec);

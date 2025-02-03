@@ -23,7 +23,7 @@ public class AuthorService implements IAuthorService{
     public Author createAuthor(Author author, Long userSecId) {
         // Buscar el UserSec por el id proporcionado
         UserSec userSec = userSecRepository.findById(userSecId)
-                .orElseThrow(() -> new RuntimeException("UserSec no encontrado con id: " + userSecId));
+                .orElseThrow(() -> new RuntimeException("UserSec not found with id: " + userSecId));
 
         // Asociar el UserSec con el Author
         author.setUser(userSec);
@@ -48,7 +48,7 @@ public class AuthorService implements IAuthorService{
     public Author updateAuthor(Long id, Author authorDetails) {
         // Buscar el Author por id
         Author existingAuthor = authorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Author no encontrado con id: " + id));
+                .orElseThrow(() -> new RuntimeException("Author not found with id: " + id));
 
         // Actualizar los detalles del Author
         existingAuthor.setUser(authorDetails.getUser());
@@ -62,7 +62,7 @@ public class AuthorService implements IAuthorService{
     public void deleteAuthor(Long id) {
         // Verificar si el Author existe antes de eliminarlo
         Author author = authorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Author no encontrado con id: " + id));
+                .orElseThrow(() -> new RuntimeException("Author not found with id: " + id));
 
         // Eliminar el Author
         authorRepository.delete(author);

@@ -24,9 +24,9 @@ public class Role {
 
     //Usamos Set porque no permite repetidos
     //List permite repetidos
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(name="user_roles", joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns=@JoinColumn(name = "role_id"))
-    private Set<Role> rolesList = new HashSet<>();
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @JoinTable (name = "roles_permissions", joinColumns = @JoinColumn(name = "role_id"),
+            inverseJoinColumns=@JoinColumn(name = "permission_id"))
+    private Set<Permission> permissionsList = new HashSet<>();
 
 }
