@@ -3,6 +3,7 @@ package com.proyecto.blog.service;
 import com.proyecto.blog.model.UserSec;
 import com.proyecto.blog.repository.IUserSecRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -58,5 +59,11 @@ public class UserService implements IUserSecService{
 
         // Eliminar el UserSec
         userSecRepository.delete(userSec);
+    }
+
+    //agregamos el método encript password en UserService
+    @Override
+    public String encriptPassword(String password) {
+        return new BCryptPasswordEncoder().encode(password);
     }
 }
