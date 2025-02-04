@@ -9,7 +9,7 @@ public interface IAuthorService {
 
     Author createAuthor(Author author, Long userSecId); // Crear un nuevo autor
     Optional<Author> getAuthorById(Long id); // Obtener un autor por ID
-    List<Author> getAllAuthors(); // Obtener todos los autores
     Author updateAuthor(Long id, Author authorDetails); // Actualizar un autor existente
-    void deleteAuthor(Long id); // Eliminar un autor
+    List<Author> findByDeletedFalse();    // Método para encontrar autores que no han sido eliminados
+    Optional<Author> findByIdAndDeletedFalse(Long id);  // Método para buscar un autor por ID si no ha sido eliminado
 }

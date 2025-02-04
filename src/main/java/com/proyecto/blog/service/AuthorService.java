@@ -20,6 +20,16 @@ public class AuthorService implements IAuthorService{
     private IUserSecRepository userSecRepository; // Repositorio de UserSec para asociar un UserSec al Author
 
     @Override
+    public List<Author> getAllAuthors() {
+        return authorRepository.findByDeletedFalse();  // Solo obtener autores no eliminados
+    }
+
+    @Override
+    public Optional<Author> getAuthorById(Long id) {
+        return authorRepository.findByIdAndDeletedFalse(id);  // Solo obtener si no está eliminado
+    }
+
+    @Override
     public Author createAuthor(Author author, Long userSecId) {
         // Buscar el UserSec por el id proporcionado
         UserSec userSec = userSecRepository.findById(userSecId)
@@ -59,12 +69,16 @@ public class AuthorService implements IAuthorService{
     }
 
     @Override
-    public void deleteAuthor(Long id) {
-        // Verificar si el Author existe antes de eliminarlo
-        Author author = authorRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Author not found with id: " + id));
-
-        // Eliminar el Author
-        authorRepository.delete(author);
+    public boolean deleteAuthor(Long id) {
+        Optional<Author> author = authorRepository.findByIdAndDeletedFalse(id);
+        if (author.isPresent()) {
+            Author authorToDelete = author.get();
+            authorToDelete.setDeleted(true);  // Establecer deleted a true
+            authorRepository.save(authorToDelete);
+            return true;
+        }
+        return false;  // No encontrado o ya eliminado
     }
+
+
 }
