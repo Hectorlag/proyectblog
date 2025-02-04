@@ -42,8 +42,11 @@ import java.util.Optional;
         // Actualizar autor existente
         @PatchMapping("/{id}")
         public ResponseEntity<Author> updateAuthor(@PathVariable Long id, @RequestBody Author authorDetails) {
-            Optional<Author> updatedAuthor = authorService.updateAuthor(id, authorDetails);
-            return updatedAuthor.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
+            Author updatedAuthor = authorService.updateAuthor(id, authorDetails);
+            if (updatedAuthor != null) {
+                return ResponseEntity.ok(updatedAuthor);
+            }
+            return ResponseEntity.notFound().build();
         }
 
         // Eliminar autor

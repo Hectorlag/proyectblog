@@ -38,19 +38,19 @@ public class PostService implements IPostService{
     // Obtener un post por id
     @Override
     public Optional<Post> getPostById(Long id) {
-        return postRepository.findById(id);
+        return postRepository.findByIdAndDeletedFalse(id);
     }
 
     // Obtener todos los posts
     @Override
     public List<Post> getAllPosts() {
-        return postRepository.findAll();
+        return postRepository.findByDeletedFalse();
     }
 
     // Actualizar un post
     @Override
     public Post updatePost(Long id, Post postDetails) {
-        Post post = postRepository.findById(id)
+        Post post = postRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
         post.setTitle(postDetails.getTitle());
@@ -58,12 +58,17 @@ public class PostService implements IPostService{
 
         return postRepository.save(post);
     }
-
     // Eliminar un post
+
     @Override
-    public void deletePost(Long id) {
-        Post post = postRepository.findById(id)
+    public boolean deletePost(Long id) {
+        Post post = postRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
-        postRepository.delete(post);
+
+        post.setDeleted(true); // Marcamos el post como eliminado
+        postRepository.save(post); // Guardamos el cambio en la base de datos
+
+        return true; // Indicamos que la operación fue exitosa
     }
+
 }

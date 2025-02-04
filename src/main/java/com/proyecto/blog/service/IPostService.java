@@ -11,5 +11,5 @@ public interface IPostService {
     Optional getPostById(Long id);
     List<Post> getAllPosts();
     Post updatePost(Long id, Post postDetails);
-    void deletePost(Long id);
+    boolean deletePost(Long id);
 }

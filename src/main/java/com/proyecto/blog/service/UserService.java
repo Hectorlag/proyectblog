@@ -17,26 +17,26 @@ public class UserService implements IUserSecService{
 
     @Override
     public UserSec createUserSec(UserSec userSec) {
-        // Aquí puedes agregar lógica extra como la encriptación de contraseñas, validación, etc.
+
         return userSecRepository.save(userSec); // Guardar el nuevo UserSec
     }
 
     @Override
     public Optional<UserSec> getUserSecById(Long id) {
         // Buscar un UserSec por su id. Devuelve un Optional
-        return userSecRepository.findById(id);
+        return userSecRepository.findByIdAndDeletedFalse(id);
     }
 
     @Override
     public List<UserSec> getAllUserSecs() {
         // Obtener todos los UserSecs desde la base de datos
-        return userSecRepository.findAll();
+        return userSecRepository.findByDeletedFalse();
     }
 
     @Override
     public UserSec updateUserSec(Long id, UserSec userSecDetails) {
         // Buscar el UserSec por id
-        UserSec existingUserSec = userSecRepository.findById(id)
+        UserSec existingUserSec = userSecRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("UserSec not found with id: " + id));
 
         // Actualizar los detalles
@@ -52,13 +52,16 @@ public class UserService implements IUserSecService{
     }
 
     @Override
-    public void deleteUserSec(Long id) {
+    public boolean deleteUserSec(Long id) {
         // Verificar si el UserSec existe antes de eliminarlo
-        UserSec userSec = userSecRepository.findById(id)
+        UserSec userSec = userSecRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("UserSec not found with id: " + id));
 
         // Eliminar el UserSec
-        userSecRepository.delete(userSec);
+        userSec.setDeleted(true); // Marcamos el UserSec como eliminado
+        userSecRepository.delete(userSec); // Guardamos en la base de datos
+
+        return true; //
     }
 
     //agregamos el método encript password en UserService

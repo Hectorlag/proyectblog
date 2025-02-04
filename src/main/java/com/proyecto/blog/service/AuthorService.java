@@ -43,21 +43,9 @@ public class AuthorService implements IAuthorService{
     }
 
     @Override
-    public Optional<Author> getAuthorById(Long id) {
-        // Buscar el autor por su id
-        return authorRepository.findById(id);
-    }
-
-    @Override
-    public List<Author> getAllAuthors() {
-        // Obtener todos los autores desde la base de datos
-        return authorRepository.findAll();
-    }
-
-    @Override
     public Author updateAuthor(Long id, Author authorDetails) {
         // Buscar el Author por id
-        Author existingAuthor = authorRepository.findById(id)
+        Author existingAuthor = authorRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("Author not found with id: " + id));
 
         // Actualizar los detalles del Author
@@ -73,7 +61,7 @@ public class AuthorService implements IAuthorService{
         Optional<Author> author = authorRepository.findByIdAndDeletedFalse(id);
         if (author.isPresent()) {
             Author authorToDelete = author.get();
-            authorToDelete.setDeleted(true);  // Establecer deleted a true
+            authorToDelete.setDeleted(true);  // Marcamos el author como eliminado
             authorRepository.save(authorToDelete);
             return true;
         }

@@ -11,7 +11,7 @@ public interface IUserSecService {
     Optional<UserSec> getUserSecById(Long id); // Obtener UserSec por id
     List<UserSec> getAllUserSecs(); // Obtener todos los UserSecs
     UserSec updateUserSec(Long id, UserSec userSecDetails); // Actualizar un UserSec
-    void deleteUserSec(Long id); // Eliminar un UserSec
+    boolean deleteUserSec(Long id); // Eliminar un UserSec
     //agregamos el método de encriptado
     public String encriptPassword(String password);
 }

@@ -11,6 +11,6 @@ public interface IPermissionService {
         Optional<Permission> getPermissionById(Long id);
         List<Permission> getAllPermissions();
         Permission updatePermission(Long id, Permission permissionDetails);
-        void deletePermission(Long id);
+        boolean deletePermission(Long id);
 
 }

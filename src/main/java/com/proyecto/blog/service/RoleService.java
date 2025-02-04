@@ -22,17 +22,17 @@ public class RoleService implements IRoleService{
 
     @Override
     public Optional<Role> getRoleById(Long id) {
-        return roleRepository.findById(id);
+        return roleRepository.findByIdAndDeletedFalse(id);
     }
 
     @Override
     public List<Role> getAllRoles() {
-        return roleRepository.findAll();
+        return roleRepository.findByDeletedFalse();
     }
 
     @Override
     public Role updateRole(Long id, Role roleDetails) {
-        return roleRepository.findById(id).map(role -> {
+        return roleRepository.findByIdAndDeletedFalse(id).map(role -> {
             role.setRole(roleDetails.getRole()); // Actualiza el nombre del rol
             role.setPermissionsList(roleDetails.getPermissionsList()); // Actualiza los permisos del rol
             return roleRepository.save(role);
@@ -40,7 +40,14 @@ public class RoleService implements IRoleService{
     }
 
     @Override
-    public void deleteRole(Long id) {
-        roleRepository.deleteById(id);
+    public boolean deleteRole(Long id) {
+
+        Role role = roleRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new RuntimeException("Role not found"));
+
+        role.setDeleted(true); // Marcamos el role como eliminado
+        roleRepository.save(role); // Guardamos el cambio en la base de datos
+
+        return true; // Indicamos que la operación fue exitosa
     }
 }

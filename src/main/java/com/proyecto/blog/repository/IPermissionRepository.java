@@ -12,5 +12,5 @@ public interface IPermissionRepository extends JpaRepository<Permission, Long> {
 
     List<Permission> findByDeletedFalse();  // Método para obtener permissions no eliminados
 
-    Optional<Permission> findByIdAndDeletedFalse(Long id);  // Método para obtener un permission por ID no eliminado
+    Optional<Permission> findByIdAndDeletedFalse(Long id);  // Método para obtener un post por ID no eliminado
 }

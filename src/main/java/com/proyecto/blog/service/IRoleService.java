@@ -11,6 +11,6 @@ public interface IRoleService {
         Optional<Role> getRoleById(Long id); // Obtener Role por id
         List<Role> getAllRoles(); // Obtener todos los Roles
         Role updateRole(Long id, Role roleDetails); // Actualizar un Role
-        void deleteRole(Long id); // Eliminar un Role
+        boolean deleteRole(Long id); // Eliminar un Role
 
 }

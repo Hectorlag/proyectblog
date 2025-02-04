@@ -1,5 +1,6 @@
 package com.proyecto.blog.service;
 
+import com.proyecto.blog.model.Author;
 import com.proyecto.blog.model.Permission;
 import com.proyecto.blog.repository.IPermissionRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -23,26 +24,34 @@ public class PermissionService implements IPermissionService{
 
     @Override
     public Optional<Permission> getPermissionById(Long id) {
-        return permissionRepository.findById(id);
+        return permissionRepository.findByIdAndDeletedFalse(id);
     }
+
 
     @Override
     public List<Permission> getAllPermissions() {
-        return permissionRepository.findAll();
+        return permissionRepository.findByDeletedFalse();
     }
 
     @Override
     public Permission updatePermission(Long id, Permission permissionDetails) {
-        return permissionRepository.findById(id).map(permission -> {
+        return permissionRepository.findByIdAndDeletedFalse(id).map(permission -> {
             permission.setPermissionName(permissionDetails.getPermissionName()); // Actualiza el nombre del permiso
             return permissionRepository.save(permission);
         }).orElseThrow(() -> new EntityNotFoundException("Permission not found with id: " + id));
     }
 
     @Override
-    public void deletePermission(Long id) {
-        permissionRepository.deleteById(id);
+    public boolean deletePermission(Long id) {
+        Permission permission = permissionRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new RuntimeException("Permission not found"));
+
+        permission.setDeleted(true); // Marcamos el permission como eliminado
+        permissionRepository.save(permission); // Guardamos el cambio en la base de datos
+
+        return true; // Indicamos que la operación fue exitosa
     }
+
 
 
 }
