@@ -36,8 +36,14 @@ public class UserController {
         return user.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
-
     @PostMapping
+    public ResponseEntity<UserSec> createUser(@RequestBody UserSec userSec) {
+        UserSec newUser = userService.createUserSec(userSec);
+        return ResponseEntity.ok(newUser);
+    }
+
+
+    /*@PostMapping
     @PreAuthorize("hasRole('ADMIN')") // Solo ADMIN puede crear usuarios
     public ResponseEntity<UserSec> createUser(@RequestBody UserSec userSec) {
         Set<Role> roleList = new HashSet<>();
@@ -60,7 +66,7 @@ public class UserController {
         }
 
         return ResponseEntity.badRequest().build();
-    }
+    }*/
 
     @PatchMapping("/{id}")
     public ResponseEntity<UserSec> updateUser(@PathVariable Long id, @RequestBody UserSec userDetails) {
