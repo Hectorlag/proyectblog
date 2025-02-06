@@ -1,5 +1,6 @@
 package com.proyecto.blog.service;
 
+import com.proyecto.blog.model.Role;
 import com.proyecto.blog.model.UserSec;
 import com.proyecto.blog.repository.IUserSecRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +16,25 @@ public class UserService implements IUserSecService{
     @Autowired
     private IUserSecRepository userSecRepository; // Inyección del repositorio de UserSec
 
+    @Autowired
+    private RoleService roleService;
+
     @Override
     public UserSec createUserSec(UserSec userSec) {
+        // Encriptamos la contraseña antes de guardar
+        userSec.setPassword(encriptPassword(userSec.getPassword()));
 
-        return userSecRepository.save(userSec); // Guardar el nuevo UserSec
+        // Si el usuario no tiene roles asignados, se le asigna el rol USER por defecto
+        if (userSec.getRolesList().isEmpty()) {
+            Role userRole = roleService.getRoleByName("USER")
+                    .orElseThrow(() -> new RuntimeException("Error: Rol USER no encontrado"));
+
+            userSec.getRolesList().add(userRole);
+        }
+
+        return userSecRepository.save(userSec);
     }
+
 
     @Override
     public Optional<UserSec> getUserSecById(Long id) {
@@ -69,4 +84,6 @@ public class UserService implements IUserSecService{
     public String encriptPassword(String password) {
         return new BCryptPasswordEncoder().encode(password);
     }
+
+
 }

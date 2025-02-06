@@ -14,4 +14,5 @@ public interface IRoleRepository extends JpaRepository<Role, Long> {
 
     Optional<Role> findByIdAndDeletedFalse(Long id);  // Método para obtener un role por ID no eliminado
 
+    Optional<Role> findByRole(String roleName);
 }

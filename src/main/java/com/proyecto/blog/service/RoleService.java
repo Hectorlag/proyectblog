@@ -50,4 +50,9 @@ public class RoleService implements IRoleService{
 
         return true; // Indicamos que la operación fue exitosa
     }
+
+    public Optional<Role> getRoleByName(String roleName) {
+        return roleRepository.findByRole(roleName);
+    }
+
 }
