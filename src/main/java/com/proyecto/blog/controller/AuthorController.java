@@ -1,6 +1,7 @@
 package com.proyecto.blog.controller;
 
 
+import com.proyecto.blog.dto.AuthorDTO;
 import com.proyecto.blog.model.Author;
 import com.proyecto.blog.service.IAuthorService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-    @RequestMapping("/authors")
+    @RequestMapping("api/authors")
     public class AuthorController {
 
         @Autowired
@@ -20,29 +21,30 @@ import java.util.Optional;
 
         // Obtener todos los autores
         @GetMapping
-        public ResponseEntity<List<Author>> getAllAuthors() {
-            List<Author> authors = authorService.getAllAuthors();
+        public ResponseEntity<List<AuthorDTO>> getAllAuthors() {
+            List<AuthorDTO> authors = authorService.getAllAuthors();
             return ResponseEntity.ok(authors);
         }
 
         // Obtener autor por ID
         @GetMapping("/{id}")
-        public ResponseEntity<Author> getAuthorById(@PathVariable Long id) {
-            Optional<Author> author = authorService.getAuthorById(id);
+        public ResponseEntity<AuthorDTO> getAuthorById(@PathVariable Long id) {
+            Optional<AuthorDTO> author = authorService.getAuthorById(id);
             return author.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
         }
 
-        // Crear nuevo autor
-        @PostMapping
-        public ResponseEntity<Author> createAuthor(@RequestBody Author author) {
-            Author newAuthor = authorService.createAuthor(author, author.getUser().getId());
-            return ResponseEntity.status(HttpStatus.CREATED).body(newAuthor);
-        }
+       // Crear un nuevo autor a partir de un usuario existente
+       @PostMapping("/{userId}")
+       public ResponseEntity<AuthorDTO> createAuthor(@PathVariable Long userId) {
+           AuthorDTO newAuthor = authorService.createAuthor(userId);
+
+           return ResponseEntity.status(HttpStatus.CREATED).body(newAuthor);
+       }
 
         // Actualizar autor existente
         @PatchMapping("/{id}")
-        public ResponseEntity<Author> updateAuthor(@PathVariable Long id, @RequestBody Author authorDetails) {
-            Author updatedAuthor = authorService.updateAuthor(id, authorDetails);
+        public ResponseEntity<AuthorDTO> updateAuthor(@PathVariable Long id, @RequestBody Author authorDetails) {
+            AuthorDTO updatedAuthor = authorService.updateAuthor(id, authorDetails);
             if (updatedAuthor != null) {
                 return ResponseEntity.ok(updatedAuthor);
             }

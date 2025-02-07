@@ -1,5 +1,7 @@
 package com.proyecto.blog.service;
 
+import com.proyecto.blog.dto.AuthorDTO;
+import com.proyecto.blog.dto.PostDTO;
 import com.proyecto.blog.model.Author;
 import com.proyecto.blog.model.UserSec;
 import com.proyecto.blog.repository.IAuthorRepository;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthorService implements IAuthorService{
@@ -20,30 +23,41 @@ public class AuthorService implements IAuthorService{
     private IUserSecRepository userSecRepository; // Repositorio de UserSec para asociar un UserSec al Author
 
     @Override
-    public List<Author> getAllAuthors() {
-        return authorRepository.findByDeletedFalse();  // Solo obtener autores no eliminados
+    public List<AuthorDTO> getAllAuthors() {
+        List<Author> authors = authorRepository.findByDeletedFalse();  // Solo obtener autores no eliminados
+        return authors.stream()
+                .map(this::convertToDTO)  // Convertir cada Author a AuthorDTO
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<Author> getAuthorById(Long id) {
-        return authorRepository.findByIdAndDeletedFalse(id);  // Solo obtener si no está eliminado
+    public Optional<AuthorDTO> getAuthorById(Long id) {
+        Optional<Author> author = authorRepository.findByIdAndDeletedFalse(id);  // Solo obtener si no está eliminado
+        return author.map(this::convertToDTO);  // Convertir el Author a AuthorDTO si lo encuentra
     }
 
     @Override
-    public Author createAuthor(Author author, Long userSecId) {
-        // Buscar el UserSec por el id proporcionado
-        UserSec userSec = userSecRepository.findById(userSecId)
-                .orElseThrow(() -> new RuntimeException("UserSec not found with id: " + userSecId));
+    public AuthorDTO createAuthor(Long userId) { // userId es el ID del usuario en la tabla users
+        UserSec user = userSecRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // Asociar el UserSec con el Author
-        author.setUser(userSec);
+        // Verificamos si ya es AUTHOR
+        boolean isAuthor = user.getRolesList().stream()
+                .anyMatch(role -> role.getRole().equals("AUTHOR"));
 
-        // Guardar el autor en la base de datos
-        return authorRepository.save(author);
+        if (!isAuthor) {
+            throw new RuntimeException("El usuario no tiene el rol de AUTHOR");
+        }
+
+        Author author = new Author();
+        author.setUser(user);  // Asociamos el usuario al autor
+        Author savedAuthor = authorRepository.save(author);
+
+        return convertToDTO(savedAuthor);  // Devolvemos el Author como AuthorDTO
     }
 
     @Override
-    public Author updateAuthor(Long id, Author authorDetails) {
+    public AuthorDTO updateAuthor(Long id, Author authorDetails) {
         // Buscar el Author por id
         Author existingAuthor = authorRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("Author not found with id: " + id));
@@ -53,7 +67,22 @@ public class AuthorService implements IAuthorService{
         existingAuthor.setPosts(authorDetails.getPosts());
 
         // Guardar el Author actualizado
-        return authorRepository.save(existingAuthor);
+        Author updatedAuthor = authorRepository.save(existingAuthor);
+
+        return convertToDTO(updatedAuthor);  // Devolvemos el Author actualizado como AuthorDTO
+    }
+
+    // Método para convertir Author a AuthorDTO
+    private AuthorDTO convertToDTO(Author author) {
+        List<PostDTO> postDTOs = author.getPosts().stream()
+                .map(post -> new PostDTO(post.getId(), post.getTitle(), post.getContent()))
+                .collect(Collectors.toList());
+
+        return new AuthorDTO(
+                author.getId(),
+                author.getUser().getUsername(),  // Asumiendo que 'user' tiene el nombre del autor
+                postDTOs
+        );
     }
 
     @Override

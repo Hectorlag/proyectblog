@@ -7,11 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
-public class UserService implements IUserSecService{
+public class UserService implements IUserSecService {
 
     @Autowired
     private IUserSecRepository userSecRepository; // Inyección del repositorio de UserSec
@@ -19,20 +21,43 @@ public class UserService implements IUserSecService{
     @Autowired
     private RoleService roleService;
 
-    @Override
     public UserSec createUserSec(UserSec userSec) {
-        // Encriptamos la contraseña antes de guardar
-        userSec.setPassword(encriptPassword(userSec.getPassword()));
+        try {
+            // Encriptamos la contraseña antes de guardar
+            userSec.setPassword(encriptPassword(userSec.getPassword()));
 
-        // Si el usuario no tiene roles asignados, se le asigna el rol USER por defecto
-        if (userSec.getRolesList().isEmpty()) {
-            Role userRole = roleService.getRoleByName("USER")
-                    .orElseThrow(() -> new RuntimeException("Error: Rol USER no encontrado"));
+            // Inicializamos la lista si es null
+            if (userSec.getRolesList() == null) {
+                userSec.setRolesList(new HashSet<>());
+            }
 
-            userSec.getRolesList().add(userRole);
+            // Si el usuario no tiene roles asignados, se le asigna el rol USER por defecto
+            if (userSec.getRolesList().isEmpty()) {
+                Role userRole = roleService.getRoleByName("USER")
+                        .orElseThrow(() -> new RuntimeException("Error: Rol USER no encontrado en la BD"));
+
+                // Asegurar que el Role es gestionado por Hibernate antes de asignarlo
+                userRole = roleService.getRoleById(userRole.getId()).orElse(userRole);
+
+                userSec.getRolesList().add(userRole);
+            } else {
+                // Verificamos y convertimos los roles antes de guardarlos
+                Set<Role> managedRoles = new HashSet<>();
+                for (Role role : userSec.getRolesList()) {
+                    Role managedRole = roleService.getRoleById(role.getId())
+                            .orElseThrow(() -> new RuntimeException("Error: Rol con ID " + role.getId() + " no encontrado"));
+                    managedRoles.add(managedRole);
+                }
+                userSec.setRolesList(managedRoles);
+            }
+
+            // Guardamos el usuario en la base de datos
+            return userSecRepository.save(userSec);
+
+        } catch (Exception e) {
+            e.printStackTrace(); // Muestra detalles del error en la consola
+            throw new RuntimeException("Error al guardar el usuario: " + e.getMessage());
         }
-
-        return userSecRepository.save(userSec);
     }
 
 
@@ -74,7 +99,7 @@ public class UserService implements IUserSecService{
 
         // Eliminar el UserSec
         userSec.setDeleted(true); // Marcamos el UserSec como eliminado
-        userSecRepository.delete(userSec); // Guardamos en la base de datos
+        userSecRepository.save(userSec);// Guardamos en la base de datos
 
         return true; //
     }
