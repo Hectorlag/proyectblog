@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
-@RestController
+    @RestController
     @RequestMapping("api/authors")
     public class AuthorController {
 
@@ -34,12 +34,7 @@ import java.util.Optional;
         }
 
        // Crear un nuevo autor a partir de un usuario existente
-       @PostMapping("/{userId}")
-       public ResponseEntity<AuthorDTO> createAuthor(@PathVariable Long userId) {
-           AuthorDTO newAuthor = authorService.createAuthor(userId);
-
-           return ResponseEntity.status(HttpStatus.CREATED).body(newAuthor);
-       }
+           
 
         // Actualizar autor existente
         @PatchMapping("/{id}")

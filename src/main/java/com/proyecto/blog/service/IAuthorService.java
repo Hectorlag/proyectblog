@@ -14,4 +14,7 @@ public interface IAuthorService {
     AuthorDTO updateAuthor(Long id, Author authorDetails); // Actualizar un autor existente
     boolean deleteAuthor(Long id); // Eliminar un autor
 
+    Optional<Author> getAuthorEntityById(Long id); // Nuevo método para obtener la entidad real
+
+
 }

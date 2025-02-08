@@ -1,5 +1,6 @@
 package com.proyecto.blog.controller;
 
+import com.proyecto.blog.dto.AuthorDTO;
 import com.proyecto.blog.model.Author;
 import com.proyecto.blog.model.Post;
 import com.proyecto.blog.service.IAuthorService;
@@ -39,16 +40,22 @@ public class PostController {
     // Crear un nuevo post
     @PostMapping
     public ResponseEntity<Post> createPost(@RequestBody Post post) {
-        // Verificamos si el autor existe
-        Author author = authorService.getAuthorById(post.getAuthor().getId())
-                .orElse(null);
-        if (author != null) {
-            post.setAuthor(author);
+        // Buscar el Author real por ID
+        Optional<Author> authorOptional = authorService.getAuthorEntityById(post.getAuthor().getId());
+
+        if (authorOptional.isPresent()) {
+            Author author = authorOptional.get(); // Obtener la entidad real
+
+            post.setAuthor(author); // Asignamos la entidad Author real
             Post newPost = postService.createPost(post, author.getId());
+
             return ResponseEntity.ok(newPost);
         }
+
         return ResponseEntity.badRequest().build(); // Si el autor no existe, retornamos un bad request
     }
+
+
 
     // Actualizar un post
     @PatchMapping("/{id}")
@@ -61,7 +68,7 @@ public class PostController {
 
             // Actualizamos el autor si es necesario
             if (postDetails.getAuthor() != null) {
-                Author author = authorService.getAuthorById(postDetails.getAuthor().getId())
+                Author author = authorService.getAuthorEntityById(postDetails.getAuthor().getId())
                         .orElse(null);
                 if (author != null) {
                     post.setAuthor(author);

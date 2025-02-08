@@ -23,6 +23,11 @@ public class AuthorService implements IAuthorService{
     private IUserSecRepository userSecRepository; // Repositorio de UserSec para asociar un UserSec al Author
 
     @Override
+    public Optional<Author> getAuthorEntityById(Long id) {
+        return authorRepository.findByIdAndDeletedFalse(id);
+    }
+
+    @Override
     public List<AuthorDTO> getAllAuthors() {
         List<Author> authors = authorRepository.findByDeletedFalse();  // Solo obtener autores no eliminados
         return authors.stream()
