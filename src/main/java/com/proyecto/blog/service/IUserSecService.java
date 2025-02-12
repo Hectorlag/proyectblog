@@ -1,5 +1,6 @@
 package com.proyecto.blog.service;
 
+import com.proyecto.blog.dto.UserDTO;
 import com.proyecto.blog.model.UserSec;
 
 import java.util.List;
@@ -7,7 +8,8 @@ import java.util.Optional;
 
 public interface IUserSecService {
 
-    UserSec createUserSec(UserSec userSec); // Crear un nuevo UserSec
+    // Método para registrar un nuevo usuario (común o autor)
+    UserSec registerUser(UserDTO userDTO, boolean isAuthor); // Crear un nuevo UserSec
     Optional<UserSec> getUserSecById(Long id); // Obtener UserSec por id
     List<UserSec> getAllUserSecs(); // Obtener todos los UserSecs
     UserSec updateUserSec(Long id, UserSec userSecDetails); // Actualizar un UserSec
