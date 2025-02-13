@@ -70,7 +70,8 @@ public class UserService implements IUserSecService {
         return userSecRepository.findByDeletedFalse();
     }
 
-    public UserSec updateUser(Long id, UserDTO userDTO, boolean isAuthor) {
+    @Override
+    public UserSec updateUserSec(Long id, UserDTO userDTO, boolean isAuthor) {
         UserSec existingUser = userSecRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
 
@@ -82,12 +83,20 @@ public class UserService implements IUserSecService {
             existingUser.setPassword(this.encriptPassword(userDTO.getPassword()));
         }
 
-        // Actualizar rol según `isAuthor`
+        // 🔹 Asegurar que el usuario siempre tenga al menos un rol
         Role newRole = roleRepository.findByRole(isAuthor ? "AUTHOR" : "USER")
                 .orElseThrow(() -> new RoleNotFoundException("Rol no encontrado"));
-        existingUser.setRolesList(Collections.singleton(newRole));
 
-        // Si el usuario es autor, gestionar la relación con `Author`
+        // Si el usuario no tiene roles, asignarle uno
+        if (existingUser.getRolesList() == null || existingUser.getRolesList().isEmpty()) {
+            existingUser.setRolesList(new HashSet<>());
+        }
+
+        // Eliminar roles anteriores y asignar solo el nuevo
+        existingUser.getRolesList().clear();
+        existingUser.getRolesList().add(newRole);
+
+        // 🔹 Gestionar la relación con `Author`
         if (isAuthor) {
             if (existingUser.getAuthor() == null) {
                 Author author = new Author();
@@ -101,6 +110,7 @@ public class UserService implements IUserSecService {
 
         return userSecRepository.save(existingUser);
     }
+
 
 
     @Override

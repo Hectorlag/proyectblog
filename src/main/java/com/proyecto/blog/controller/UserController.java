@@ -2,6 +2,7 @@ package com.proyecto.blog.controller;
 
 import com.proyecto.blog.dto.UserDTO;
 import com.proyecto.blog.dto.UserSecResponseDTO;
+import com.proyecto.blog.model.Author;
 import com.proyecto.blog.model.Role;
 import com.proyecto.blog.model.UserSec;
 import com.proyecto.blog.service.IRoleService;
@@ -63,36 +64,15 @@ public class UserController {
         return ResponseEntity.ok(responseDTO);
     }
 
-
     @PatchMapping("/{id}")
-    public ResponseEntity<UserSecResponseDTO> updateUser(@PathVariable Long id, @RequestBody UserSec userDetails) {
-        UserSec existingUser = userService.getUserSecById(id).orElse(null);
+    public ResponseEntity<UserSecResponseDTO> updateUser(
+            @PathVariable Long id,
+            @RequestBody UserDTO userDTO,
+            @RequestParam boolean isAuthor) {  // 🔹 Se recibe el parámetro en la URL
 
-        if (existingUser == null) {
-            return ResponseEntity.notFound().build();
-        }
+        UserSec updatedUser = userService.updateUserSec(id, userDTO, isAuthor);
 
-        // Actualizar solo si los valores no son nulos
-        if (userDetails.getUsername() != null && !userDetails.getUsername().isEmpty()) {
-            existingUser.setUsername(userDetails.getUsername());
-        }
-
-        if (userDetails.getPassword() != null && !userDetails.getPassword().isEmpty()) {
-            existingUser.setPassword(userService.encriptPassword(userDetails.getPassword()));
-        }
-
-        if (userDetails.getRolesList() != null && !userDetails.getRolesList().isEmpty()) {
-            Set<Role> roleList = userDetails.getRolesList().stream()
-                    .map(role -> roleService.getRoleById(role.getId()).orElse(null))
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toSet());
-            existingUser.setRolesList(roleList);
-        }
-
-        // Guardar los cambios
-        UserSec updatedUser = userService.updateUserSec(id, existingUser);
-
-        // Convertir la entidad a DTO
+        // 🔹 Convertir la entidad a DTO de respuesta
         UserSecResponseDTO responseDTO = new UserSecResponseDTO(
                 updatedUser.getUsername(),
                 updatedUser.getRolesList().stream().map(Role::getRole).collect(Collectors.toSet()),

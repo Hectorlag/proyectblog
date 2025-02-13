@@ -12,7 +12,7 @@ public interface IUserSecService {
     UserSec registerUser(UserDTO userDTO, boolean isAuthor); // Crear un nuevo UserSec
     Optional<UserSec> getUserSecById(Long id); // Obtener UserSec por id
     List<UserSec> getAllUserSecs(); // Obtener todos los UserSecs
-    UserSec updateUserSec(Long id, UserSec userSecDetails); // Actualizar un UserSec
+    UserSec updateUserSec(Long id, UserDTO userDTO, boolean isAuthor); // Actualizar un UserSec
     boolean deleteUserSec(Long id); // Eliminar un UserSec
     //agregamos el método de encriptado
     public String encriptPassword(String password);
