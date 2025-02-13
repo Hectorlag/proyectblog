@@ -1,6 +1,7 @@
 package com.proyecto.blog.controller;
 
 import com.proyecto.blog.dto.UserDTO;
+import com.proyecto.blog.dto.UserSecResponseDTO;
 import com.proyecto.blog.model.Role;
 import com.proyecto.blog.model.UserSec;
 import com.proyecto.blog.service.IRoleService;
@@ -14,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/users")
@@ -37,14 +39,20 @@ public class UserController {
         return user.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
-    @PostMapping
-    public ResponseEntity<UserSec> createUser(@RequestBody UserDTO userDTO, @RequestParam boolean isAuthor) {
+    @PostMapping("/api/user")
+    public ResponseEntity<UserSecResponseDTO> createUser(@RequestBody UserDTO userDTO, @RequestParam boolean isAuthor) {
         // Llamar al servicio para registrar el usuario, pasando el DTO y el parámetro isAuthor
         UserSec newUser = userService.registerUser(userDTO, isAuthor);
 
-        // Retornar la respuesta con el nuevo usuario creado
-        return ResponseEntity.ok(newUser);
+        // Crear un DTO de respuesta con los datos relevantes del usuario
+        UserSecResponseDTO responseDTO = new UserSecResponseDTO(
+                newUser.getUsername(),
+                newUser.getRolesList().stream().map(Role::getRole).collect(Collectors.toSet()) // O el formato que necesites
+        );
+
+        return ResponseEntity.ok(responseDTO);
     }
+
 
 
 

@@ -10,6 +10,7 @@ import com.proyecto.blog.repository.IRoleRepository;
 import com.proyecto.blog.repository.IUserSecRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -27,13 +28,13 @@ public class UserService implements IUserSecService {
     private IAuthorRepository iAuthorRepository;
 
     @Autowired
-    private BCryptPasswordEncoder passwordEncoder;  // Inyección de BCryptPasswordEncoder
+    private PasswordEncoder passwordEncoder; // Inyección del BCryptPasswordEncoder
 
     public UserSec registerUser(UserDTO userDTO, boolean isAuthor) {
         // Crear el usuario
         UserSec user = new UserSec();
         user.setUsername(userDTO.getUsername());
-        user.setPassword(encriptPassword(userDTO.getPassword()));  // Encriptar la contraseña
+        user.setPassword(this.encriptPassword(userDTO.getPassword()));  // Encriptar la contraseña
         user.setEnabled(true);
         user.setAccountNotLocked(true);
         user.setAccountNotExpired(true);
