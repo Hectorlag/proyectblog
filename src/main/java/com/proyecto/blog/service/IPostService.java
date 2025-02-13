@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface IPostService {
 
-    Post createPost(Post post, Long userSecId);
+    Post createPost(Post post);
     Optional getPostById(Long id);
     List<Post> getAllPosts();
     Post updatePost(Long id, Post postDetails);

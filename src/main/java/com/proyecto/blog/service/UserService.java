@@ -73,7 +73,7 @@ public class UserService implements IUserSecService {
     @Override
     public UserSec updateUserSec(Long id, UserDTO userDTO, boolean isAuthor) {
         UserSec existingUser = userSecRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         // Actualizar solo los campos que se envían
         if (userDTO.getUsername() != null) {
@@ -85,7 +85,7 @@ public class UserService implements IUserSecService {
 
         // 🔹 Asegurar que el usuario siempre tenga al menos un rol
         Role newRole = roleRepository.findByRole(isAuthor ? "AUTHOR" : "USER")
-                .orElseThrow(() -> new RoleNotFoundException("Rol no encontrado"));
+                .orElseThrow(() -> new RoleNotFoundException("Rol not found"));
 
         // Si el usuario no tiene roles, asignarle uno
         if (existingUser.getRolesList() == null || existingUser.getRolesList().isEmpty()) {

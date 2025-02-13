@@ -47,7 +47,7 @@ public class PostController {
             Author author = authorOptional.get(); // Obtener la entidad real
 
             post.setAuthor(author); // Asignamos la entidad Author real
-            Post newPost = postService.createPost(post, author.getId());
+            Post newPost = postService.createPost(post);
 
             return ResponseEntity.ok(newPost);
         }

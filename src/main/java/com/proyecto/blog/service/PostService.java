@@ -3,6 +3,7 @@ package com.proyecto.blog.service;
 import com.proyecto.blog.model.Author;
 import com.proyecto.blog.model.Post;
 import com.proyecto.blog.model.UserSec;
+import com.proyecto.blog.repository.IAuthorRepository;
 import com.proyecto.blog.repository.IPostRepository;
 import com.proyecto.blog.repository.IUserSecRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,22 +19,22 @@ public class PostService implements IPostService{
     private IPostRepository postRepository;
 
     @Autowired
-    private IUserSecRepository userSecRepository;
+    private IAuthorRepository authorRepository;
 
     // Crear un nuevo post
     @Override
-    public Post createPost(Post post, Long userSecId) {
-        UserSec userSec = userSecRepository.findById(userSecId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        Author author = userSec.getAuthor();
-
-        if (author != null) {
-            post.setAuthor(author);
-            return postRepository.save(post);
-        } else {
-            throw new RuntimeException("User does not have an author associated.");
+    public Post createPost(Post post) {
+        if (post.getAuthor() == null || post.getAuthor().getId() == null) {
+            throw new IllegalArgumentException("Author ID is required");
         }
+
+        Author author = authorRepository.findById(post.getAuthor().getId())
+                .orElseThrow(() -> new RuntimeException("Author not found"));
+
+        post.setAuthor(author);
+        return postRepository.save(post);
     }
+
 
     // Obtener un post por id
     @Override
