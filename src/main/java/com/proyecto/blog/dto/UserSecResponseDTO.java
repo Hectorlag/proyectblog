@@ -14,5 +14,6 @@ import java.util.Set;
 public class UserSecResponseDTO {
 
     private String username;
-    private Set<String> rolesList; // Solo los roles en forma de lista de strings (o lo que necesites)
+    private Set<String> rolesList;
+    private Long authorId; // Si el usuario es autor, devuelve solo su ID
 }

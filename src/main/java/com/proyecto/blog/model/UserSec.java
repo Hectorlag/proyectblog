@@ -1,5 +1,6 @@
 package com.proyecto.blog.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -39,6 +40,7 @@ public class UserSec {
             inverseJoinColumns=@JoinColumn(name = "role_id"))
     private Set<Role> rolesList = new HashSet<>();
 
+    @JsonManagedReference
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Author author;
 }

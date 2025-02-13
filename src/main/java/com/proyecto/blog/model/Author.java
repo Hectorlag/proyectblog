@@ -1,5 +1,6 @@
 package com.proyecto.blog.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,6 +25,7 @@ public class Author {
     @Column(nullable = false)
     private boolean deleted = false;
 
+    @JsonBackReference
     @OneToOne
     @JoinColumn(name = "user_id", unique = true, nullable = false)
     private UserSec user; // Relación con UserSec

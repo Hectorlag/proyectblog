@@ -28,26 +28,39 @@ public class UserController {
     private IRoleService roleService;
 
     @GetMapping
-    public ResponseEntity<List<UserSec>> getAllUsers() {
-        List<UserSec> userList = userService.getAllUserSecs();
+    public ResponseEntity<List<UserSecResponseDTO>> getAllUsers() {
+        List<UserSecResponseDTO> userList = userService.getAllUserSecs().stream()
+                .map(user -> new UserSecResponseDTO(
+                        user.getUsername(),
+                        user.getRolesList().stream().map(Role::getRole).collect(Collectors.toSet()),
+                        user.getAuthor() != null ? user.getAuthor().getId() : null
+                ))
+                .collect(Collectors.toList());
+
         return ResponseEntity.ok(userList);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserSec> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserSecResponseDTO> getUserById(@PathVariable Long id) {
         Optional<UserSec> user = userService.getUserSecById(id);
-        return user.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+
+        return user.map(u -> ResponseEntity.ok(
+                new UserSecResponseDTO(
+                        u.getUsername(),
+                        u.getRolesList().stream().map(Role::getRole).collect(Collectors.toSet()),
+                        u.getAuthor() != null ? u.getAuthor().getId() : null
+                )
+        )).orElseGet(() -> ResponseEntity.notFound().build());
     }
+
     @PostMapping("/api/user")
     public ResponseEntity<UserSecResponseDTO> createUser(@RequestBody UserDTO userDTO, @RequestParam boolean isAuthor) {
-        // Llamar al servicio para registrar el usuario, pasando el DTO y el parámetro isAuthor
         UserSec newUser = userService.registerUser(userDTO, isAuthor);
 
-        // Crear un DTO de respuesta con los datos relevantes del usuario
         UserSecResponseDTO responseDTO = new UserSecResponseDTO(
                 newUser.getUsername(),
-                newUser.getRolesList().stream().map(Role::getRole).collect(Collectors.toSet()) // O el formato que necesites
+                newUser.getRolesList().stream().map(Role::getRole).collect(Collectors.toSet()),
+                newUser.getAuthor() != null ? newUser.getAuthor().getId() : null
         );
 
         return ResponseEntity.ok(responseDTO);
