@@ -2,6 +2,7 @@ package com.proyecto.blog.service;
 
 import com.proyecto.blog.dto.UserDTO;
 import com.proyecto.blog.excepcion.RoleNotFoundException;
+import com.proyecto.blog.excepcion.UserNotFoundException;
 import com.proyecto.blog.model.Author;
 import com.proyecto.blog.model.Role;
 import com.proyecto.blog.model.UserSec;
@@ -69,20 +70,38 @@ public class UserService implements IUserSecService {
         return userSecRepository.findByDeletedFalse();
     }
 
-    @Override
-    public UserSec updateUserSec(Long id, UserSec userSecDetails) {
-        UserSec existingUserSec = userSecRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new RuntimeException("UserSec not found with id: " + id));
+    public UserSec updateUser(Long id, UserDTO userDTO, boolean isAuthor) {
+        UserSec existingUser = userSecRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("Usuario no encontrado"));
 
-        existingUserSec.setUsername(userSecDetails.getUsername());
-        existingUserSec.setPassword(encriptPassword(userSecDetails.getPassword()));  // Encriptar la nueva contraseña
-        existingUserSec.setEnabled(userSecDetails.isEnabled());
-        existingUserSec.setAccountNotLocked(userSecDetails.isAccountNotLocked());
-        existingUserSec.setAccountNotExpired(userSecDetails.isAccountNotExpired());
-        existingUserSec.setCredentialNotExpired(userSecDetails.isCredentialNotExpired());
+        // Actualizar solo los campos que se envían
+        if (userDTO.getUsername() != null) {
+            existingUser.setUsername(userDTO.getUsername());
+        }
+        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
+            existingUser.setPassword(this.encriptPassword(userDTO.getPassword()));
+        }
 
-        return userSecRepository.save(existingUserSec);
+        // Actualizar rol según `isAuthor`
+        Role newRole = roleRepository.findByRole(isAuthor ? "AUTHOR" : "USER")
+                .orElseThrow(() -> new RoleNotFoundException("Rol no encontrado"));
+        existingUser.setRolesList(Collections.singleton(newRole));
+
+        // Si el usuario es autor, gestionar la relación con `Author`
+        if (isAuthor) {
+            if (existingUser.getAuthor() == null) {
+                Author author = new Author();
+                author.setUser(existingUser);
+                iAuthorRepository.save(author);
+                existingUser.setAuthor(author);
+            }
+        } else {
+            existingUser.setAuthor(null); // Si ya no es autor, eliminamos la relación
+        }
+
+        return userSecRepository.save(existingUser);
     }
+
 
     @Override
     public boolean deleteUserSec(Long id) {

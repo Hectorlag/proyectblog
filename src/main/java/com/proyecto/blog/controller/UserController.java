@@ -11,10 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -67,58 +64,44 @@ public class UserController {
     }
 
 
-
-
-    /*@PostMapping
-    @PreAuthorize("hasRole('ADMIN')") // Solo ADMIN puede crear usuarios
-    public ResponseEntity<UserSec> createUser(@RequestBody UserSec userSec) {
-        Set<Role> roleList = new HashSet<>();
-        Role readRole;
-
-        // Encriptamos la contraseña antes de guardar
-        userSec.setPassword(userService.encriptPassword(userSec.getPassword()));
-
-        for (Role role : userSec.getRolesList()) {
-            readRole = roleService.getRoleById(role.getId()).orElse(null);
-            if (readRole != null) {
-                roleList.add(readRole);
-            }
-        }
-
-        if (!roleList.isEmpty()) {
-            userSec.setRolesList(roleList);
-            UserSec newUser = userService.createUserSec(userSec);
-            return ResponseEntity.ok(newUser);
-        }
-
-        return ResponseEntity.badRequest().build();
-    }*/
-
     @PatchMapping("/{id}")
-    public ResponseEntity<UserSec> updateUser(@PathVariable Long id, @RequestBody UserSec userDetails) {
+    public ResponseEntity<UserSecResponseDTO> updateUser(@PathVariable Long id, @RequestBody UserSec userDetails) {
         UserSec existingUser = userService.getUserSecById(id).orElse(null);
+
         if (existingUser == null) {
             return ResponseEntity.notFound().build();
         }
 
-        existingUser.setUsername(userDetails.getUsername());
+        // Actualizar solo si los valores no son nulos
+        if (userDetails.getUsername() != null && !userDetails.getUsername().isEmpty()) {
+            existingUser.setUsername(userDetails.getUsername());
+        }
 
         if (userDetails.getPassword() != null && !userDetails.getPassword().isEmpty()) {
             existingUser.setPassword(userService.encriptPassword(userDetails.getPassword()));
         }
 
-        Set<Role> roleList = new HashSet<>();
-        for (Role role : userDetails.getRolesList()) {
-            Role readRole = roleService.getRoleById(role.getId()).orElse(null);
-            if (readRole != null) {
-                roleList.add(readRole);
-            }
+        if (userDetails.getRolesList() != null && !userDetails.getRolesList().isEmpty()) {
+            Set<Role> roleList = userDetails.getRolesList().stream()
+                    .map(role -> roleService.getRoleById(role.getId()).orElse(null))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            existingUser.setRolesList(roleList);
         }
-        existingUser.setRolesList(roleList);
 
+        // Guardar los cambios
         UserSec updatedUser = userService.updateUserSec(id, existingUser);
-        return ResponseEntity.ok(updatedUser);
+
+        // Convertir la entidad a DTO
+        UserSecResponseDTO responseDTO = new UserSecResponseDTO(
+                updatedUser.getUsername(),
+                updatedUser.getRolesList().stream().map(Role::getRole).collect(Collectors.toSet()),
+                updatedUser.getAuthor() != null ? updatedUser.getAuthor().getId() : null
+        );
+
+        return ResponseEntity.ok(responseDTO);
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
