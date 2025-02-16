@@ -1,5 +1,6 @@
 package com.proyecto.blog.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,6 +31,7 @@ public class Post {
 
     @ManyToOne
     @JoinColumn(name = "author_id", nullable = false)
+    @JsonBackReference  // Evita la serialización infinita
     private Author author; // Relación con Author
 
 }

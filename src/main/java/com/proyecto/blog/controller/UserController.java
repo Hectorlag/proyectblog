@@ -52,8 +52,10 @@ public class UserController {
     }
 
     @PostMapping("/api/user")
-    public ResponseEntity<UserSecResponseDTO> createUser(@RequestBody UserDTO userDTO, @RequestParam boolean isAuthor) {
-        UserSec newUser = userService.registerUser(userDTO, isAuthor);
+    public ResponseEntity<UserSecResponseDTO> createUser(@RequestBody UserDTO userDTO,
+                                                         @RequestParam boolean isAuthor,
+                                                         String authorName) {
+        UserSec newUser = userService.registerUser(userDTO, isAuthor, authorName);
 
         UserSecResponseDTO responseDTO = new UserSecResponseDTO(
                 newUser.getUsername(),
@@ -68,11 +70,11 @@ public class UserController {
     public ResponseEntity<UserSecResponseDTO> updateUser(
             @PathVariable Long id,
             @RequestBody UserDTO userDTO,
-            @RequestParam boolean isAuthor) {  // 🔹 Se recibe el parámetro en la URL
+            @RequestParam boolean isAuthor) {  //  Se recibe el parámetro en la URL
 
         UserSec updatedUser = userService.updateUserSec(id, userDTO, isAuthor);
 
-        // 🔹 Convertir la entidad a DTO de respuesta
+        //  Convertir la entidad a DTO de respuesta
         UserSecResponseDTO responseDTO = new UserSecResponseDTO(
                 updatedUser.getUsername(),
                 updatedUser.getRolesList().stream().map(Role::getRole).collect(Collectors.toSet()),

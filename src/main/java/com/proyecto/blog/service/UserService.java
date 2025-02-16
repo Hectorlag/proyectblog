@@ -31,11 +31,11 @@ public class UserService implements IUserSecService {
     @Autowired
     private PasswordEncoder passwordEncoder; // Inyección del BCryptPasswordEncoder
 
-    public UserSec registerUser(UserDTO userDTO, boolean isAuthor) {
+    public UserSec registerUser(UserDTO userDTO, boolean isAuthor, String authorName) {
         // Crear el usuario
         UserSec user = new UserSec();
         user.setUsername(userDTO.getUsername());
-        user.setPassword(this.encriptPassword(userDTO.getPassword()));  // Encriptar la contraseña
+        user.setPassword(this.encriptPassword(userDTO.getPassword())); // Encriptar la contraseña
         user.setEnabled(true);
         user.setAccountNotLocked(true);
         user.setAccountNotExpired(true);
@@ -49,16 +49,18 @@ public class UserService implements IUserSecService {
         // Guardar usuario
         UserSec savedUser = userSecRepository.save(user);
 
-        // Si es autor, creamos automáticamente el Author
+        // Si es autor, creamos automáticamente el Author con su nombre
         if (isAuthor) {
             Author author = new Author();
             author.setUser(savedUser);
+            author.setName(authorName);  //  Ahora guardamos el nombre del autor
             iAuthorRepository.save(author);
-            savedUser.setAuthor(author);  // Establecer la relación en el UserSec
+            savedUser.setAuthor(author); // Establecer la relación en el UserSec
         }
 
         return savedUser;
     }
+
 
     @Override
     public Optional<UserSec> getUserSecById(Long id) {
@@ -83,7 +85,7 @@ public class UserService implements IUserSecService {
             existingUser.setPassword(this.encriptPassword(userDTO.getPassword()));
         }
 
-        // 🔹 Asegurar que el usuario siempre tenga al menos un rol
+        //  Asegurar que el usuario siempre tenga al menos un rol
         Role newRole = roleRepository.findByRole(isAuthor ? "AUTHOR" : "USER")
                 .orElseThrow(() -> new RoleNotFoundException("Rol not found"));
 
@@ -96,7 +98,7 @@ public class UserService implements IUserSecService {
         existingUser.getRolesList().clear();
         existingUser.getRolesList().add(newRole);
 
-        // 🔹 Gestionar la relación con `Author`
+        //  Gestionar la relación con `Author`
         if (isAuthor) {
             if (existingUser.getAuthor() == null) {
                 Author author = new Author();

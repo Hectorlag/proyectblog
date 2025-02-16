@@ -1,6 +1,7 @@
 package com.proyecto.blog.controller;
 
 import com.proyecto.blog.dto.AuthorDTO;
+import com.proyecto.blog.dto.PostDTOandNameAuthor;
 import com.proyecto.blog.model.Author;
 import com.proyecto.blog.model.Post;
 import com.proyecto.blog.service.IAuthorService;
@@ -24,62 +25,32 @@ public class PostController {
 
     // Obtener todos los posts
     @GetMapping
-    public ResponseEntity<List<Post>> getAllPosts() {
-        List<Post> posts = postService.getAllPosts();
+    public ResponseEntity<List<PostDTOandNameAuthor>> getAllPosts() {
+        List<PostDTOandNameAuthor> posts = postService.getAllPosts();
         return ResponseEntity.ok(posts);
     }
 
     // Obtener un post por ID
     @GetMapping("/{id}")
-    public ResponseEntity<Post> getPostById(@PathVariable Long id) {
-        Optional<Post> post = postService.getPostById(id);
+    public ResponseEntity<PostDTOandNameAuthor> getPostById(@PathVariable Long id) {
+        Optional<PostDTOandNameAuthor> post = postService.getPostById(id);
         return post.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     // Crear un nuevo post
     @PostMapping
-    public ResponseEntity<Post> createPost(@RequestBody Post post) {
-        // Buscar el Author real por ID
-        Optional<Author> authorOptional = authorService.getAuthorEntityById(post.getAuthor().getId());
-
-        if (authorOptional.isPresent()) {
-            Author author = authorOptional.get(); // Obtener la entidad real
-
-            post.setAuthor(author); // Asignamos la entidad Author real
-            Post newPost = postService.createPost(post);
-
-            return ResponseEntity.ok(newPost);
-        }
-
-        return ResponseEntity.badRequest().build(); // Si el autor no existe, retornamos un bad request
+    public ResponseEntity<PostDTOandNameAuthor> createPost(@RequestBody Post post) {
+        PostDTOandNameAuthor newPostDTO = postService.createPost(post);
+        return ResponseEntity.ok(newPostDTO);
     }
 
-
-
-    // Actualizar un post
     @PatchMapping("/{id}")
-    public ResponseEntity<Post> updatePost(@PathVariable Long id, @RequestBody Post postDetails) {
-        Optional<Post> existingPost = postService.getPostById(id);
-        if (existingPost.isPresent()) {
-            Post post = existingPost.get();
-            post.setTitle(postDetails.getTitle());
-            post.setContent(postDetails.getContent());
+    public ResponseEntity<PostDTOandNameAuthor> updatePost(@PathVariable Long id, @RequestBody Post postDetails) {
+        // Llamamos al servicio para actualizar el post
+        PostDTOandNameAuthor updatedPost = postService.updatePost(id, postDetails);
 
-            // Actualizamos el autor si es necesario
-            if (postDetails.getAuthor() != null) {
-                Author author = authorService.getAuthorEntityById(postDetails.getAuthor().getId())
-                        .orElse(null);
-                if (author != null) {
-                    post.setAuthor(author);
-                }
-            }
-
-            Post updatedPost = postService.updatePost(id, post);
-            return ResponseEntity.ok(updatedPost);
-        }
-
-        return ResponseEntity.notFound().build(); // Si el post no existe, retornamos not found
+        return ResponseEntity.ok(updatedPost); // Retornamos el DTO con el post actualizado
     }
 
     // Eliminar un post

@@ -1,6 +1,7 @@
 package com.proyecto.blog.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,6 +24,9 @@ public class Author {
     private Long id;
 
     @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
     private boolean deleted = false;
 
     @JsonBackReference
@@ -31,6 +35,7 @@ public class Author {
     private UserSec user; // Relación con UserSec
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference  // Controla la serialización
     private List<Post> posts = new ArrayList<>();
 
 }
