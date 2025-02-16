@@ -85,7 +85,7 @@ public class AuthorService implements IAuthorService{
 
         return new AuthorDTO(
                 author.getId(),
-                author.getUser().getUsername(),  // Asumiendo que 'user' tiene el nombre del autor
+                author.getName(),
                 postDTOs
         );
     }
