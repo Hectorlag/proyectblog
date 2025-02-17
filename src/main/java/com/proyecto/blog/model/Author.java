@@ -32,7 +32,7 @@ public class Author {
     @JsonBackReference
     @OneToOne
     @JoinColumn(name = "user_id", unique = true, nullable = false)
-    private UserSec user; // Relación con UserSec
+    private UserSec user;
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference  // Controla la serialización

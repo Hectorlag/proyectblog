@@ -32,10 +32,7 @@ public class UserSec {
     @Column(nullable = false)
     private boolean deleted = false;
 
-    //Usamos set porque no admite repetidos
-    //List permite repetidos
-
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)//el eager me va a cargar todos los roles
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)//eager carga todos los roles
     @JoinTable(name="user_roles", joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns=@JoinColumn(name = "role_id"))
     private Set<Role> rolesList = new HashSet<>();

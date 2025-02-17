@@ -113,8 +113,6 @@ public class UserService implements IUserSecService {
         return userSecRepository.save(existingUser);
     }
 
-
-
     @Override
     public boolean deleteUserSec(Long id) {
         UserSec userSec = userSecRepository.findByIdAndDeletedFalse(id)
