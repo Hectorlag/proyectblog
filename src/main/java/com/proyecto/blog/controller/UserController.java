@@ -51,7 +51,7 @@ public class UserController {
         )).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/api/user")
+    @PostMapping()
     public ResponseEntity<UserSecResponseDTO> createUser(@RequestBody UserDTO userDTO,
                                                          @RequestParam boolean isAuthor,
                                                          String authorName) {
