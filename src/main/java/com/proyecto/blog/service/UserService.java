@@ -41,10 +41,14 @@ public class UserService implements IUserSecService {
         user.setAccountNotExpired(true);
         user.setCredentialNotExpired(true);
 
-        // Asignar rol
-        Role role = roleRepository.findByRole(isAuthor ? "AUTHOR" : "USER")
-                .orElseThrow(() -> new RoleNotFoundException("Rol no encontrado"));
-        user.setRolesList(Collections.singleton(role));
+        // Asignar roles según los roles del DTO
+        Set<Role> roles = new HashSet<>();
+        for (String roleName : userDTO.getRoles()) {
+            Role role = roleRepository.findByRole(roleName)
+                    .orElseThrow(() -> new RoleNotFoundException("Rol no encontrado: " + roleName));
+            roles.add(role);
+        }
+        user.setRolesList(roles);
 
         // Guardar usuario
         UserSec savedUser = userSecRepository.save(user);
@@ -53,13 +57,14 @@ public class UserService implements IUserSecService {
         if (isAuthor) {
             Author author = new Author();
             author.setUser(savedUser);
-            author.setName(authorName);  //  Ahora guardamos el nombre del autor
+            author.setName(authorName);  // Guardamos el nombre del autor
             iAuthorRepository.save(author);
             savedUser.setAuthor(author); // Establecer la relación en el UserSec
         }
 
         return savedUser;
     }
+
 
 
     @Override

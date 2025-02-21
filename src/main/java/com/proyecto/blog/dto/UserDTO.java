@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter @Setter
@@ -21,4 +23,5 @@ public class UserDTO {
     private String password;
     private String authorName;
     private boolean isAuthor;  // Indicador de si el usuario es un AUTHOR
+    private List<String> roles;  // Para asignar ADMIN manualmente
 }
