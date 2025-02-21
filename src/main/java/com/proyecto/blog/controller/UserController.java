@@ -8,9 +8,11 @@ import com.proyecto.blog.model.UserSec;
 import com.proyecto.blog.service.IRoleService;
 import com.proyecto.blog.service.IUserSecService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,72 +24,62 @@ public class UserController {
     @Autowired
     private IUserSecService userService;
 
-    @Autowired
-    private IRoleService roleService;
-
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<UserSecResponseDTO>> getAllUsers() {
         List<UserSecResponseDTO> userList = userService.getAllUserSecs().stream()
-                .map(user -> new UserSecResponseDTO(
-                        user.getUsername(),
-                        user.getRolesList().stream().map(Role::getRole).collect(Collectors.toSet()),
-                        user.getAuthor() != null ? user.getAuthor().getId() : null
-                ))
+                .map(UserSecResponseDTO::fromUserSec)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(userList);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<UserSecResponseDTO> getUserById(@PathVariable Long id) {
-        Optional<UserSec> user = userService.getUserSecById(id);
+        UserSec user = userService.getUserSecById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
-        return user.map(u -> ResponseEntity.ok(
-                new UserSecResponseDTO(
-                        u.getUsername(),
-                        u.getRolesList().stream().map(Role::getRole).collect(Collectors.toSet()),
-                        u.getAuthor() != null ? u.getAuthor().getId() : null
-                )
-        )).orElseGet(() -> ResponseEntity.notFound().build());
+        return ResponseEntity.ok(UserSecResponseDTO.fromUserSec(user));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<UserSecResponseDTO> createUser(@RequestBody UserDTO userDTO,
-                                                         @RequestParam boolean isAuthor,
-                                                         String authorName) {
+    public ResponseEntity<UserSecResponseDTO> createUser(
+            @RequestBody UserDTO userDTO,
+            @RequestParam boolean isAuthor,
+            @RequestParam(required = false) String authorName) {
+
         UserSec newUser = userService.registerUser(userDTO, isAuthor, authorName);
 
-        UserSecResponseDTO responseDTO = new UserSecResponseDTO(
-                newUser.getUsername(),
-                newUser.getRolesList().stream().map(Role::getRole).collect(Collectors.toSet()),
-                newUser.getAuthor() != null ? newUser.getAuthor().getId() : null
-        );
-
-        return ResponseEntity.ok(responseDTO);
+        return ResponseEntity.ok(UserSecResponseDTO.fromUserSec(newUser));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}")
     public ResponseEntity<UserSecResponseDTO> updateUser(
             @PathVariable Long id,
             @RequestBody UserDTO userDTO,
-            @RequestParam boolean isAuthor) {  //  Se recibe el parámetro en la URL
+            @RequestParam(required = false, defaultValue = "false") boolean isAuthor) {
 
         UserSec updatedUser = userService.updateUserSec(id, userDTO, isAuthor);
-
-        //  Convertir la entidad a DTO de respuesta
-        UserSecResponseDTO responseDTO = new UserSecResponseDTO(
-                updatedUser.getUsername(),
-                updatedUser.getRolesList().stream().map(Role::getRole).collect(Collectors.toSet()),
-                updatedUser.getAuthor() != null ? updatedUser.getAuthor().getId() : null
-        );
-
-        return ResponseEntity.ok(responseDTO);
+        return ResponseEntity.ok(UserSecResponseDTO.fromUserSec(updatedUser));
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUserSec(id);
         return ResponseEntity.noContent().build();
     }
+
+    //Método de utilidad
+    public static UserSecResponseDTO fromUserSec(UserSec user) {
+        return new UserSecResponseDTO(
+                user.getUsername(),
+                user.getRolesList().stream().map(Role::getRole).collect(Collectors.toSet()),
+                user.getAuthor() != null ? user.getAuthor().getId() : null
+        );
+    }
+
 }
