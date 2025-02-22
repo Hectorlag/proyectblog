@@ -25,6 +25,12 @@ public class UserController {
     private IUserSecService userService;
 
     @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/status")
+    public ResponseEntity<String> getAdminStatus() {
+        return ResponseEntity.ok("🔐 Acceso concedido: Estás autenticado como ADMIN y tienes acceso a los recursos protegidos.");
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<UserSecResponseDTO>> getAllUsers() {
         List<UserSecResponseDTO> userList = userService.getAllUserSecs().stream()

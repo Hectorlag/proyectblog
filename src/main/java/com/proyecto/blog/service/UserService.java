@@ -65,8 +65,6 @@ public class UserService implements IUserSecService {
         return savedUser;
     }
 
-
-
     @Override
     public Optional<UserSec> getUserSecById(Long id) {
         return userSecRepository.findByIdAndDeletedFalse(id);
