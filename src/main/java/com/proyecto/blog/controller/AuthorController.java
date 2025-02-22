@@ -66,12 +66,20 @@ import java.util.Optional;
             return ResponseEntity.noContent().build();
         }
 
-        // ENDPOINT para verificar el acceso de un usuario
         @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'AUTHOR')")
         @GetMapping("/status")
         public ResponseEntity<String> getAuthorAccessStatus(Authentication authentication) {
-            return ResponseEntity.ok("✅ Estás autenticado como: " + authentication.getAuthorities());
+            String role = authentication.getAuthorities().stream()
+                    .map(grantedAuthority -> grantedAuthority.getAuthority())
+                    .filter(authority -> authority.startsWith("ROLE_")) // Filtra solo roles
+                    .map(roleName -> roleName.replace("ROLE_", "")) // Elimina el prefijo "ROLE_"
+                    .findFirst()
+                    .orElse("Sin rol asignado");
+
+            return ResponseEntity.ok("✅ Estás autenticado como: " + role);
         }
 
 
-}
+
+
+    }
