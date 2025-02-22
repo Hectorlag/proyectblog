@@ -7,6 +7,8 @@ import com.proyecto.blog.service.IAuthorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +22,7 @@ import java.util.Optional;
         private IAuthorService authorService; // Asegúrate de que tienes el servicio adecuado
 
         // Obtener todos los autores
+        @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'AUTHOR')")
         @GetMapping
         public ResponseEntity<List<AuthorDTO>> getAllAuthors() {
             List<AuthorDTO> authors = authorService.getAllAuthors();
@@ -27,6 +30,7 @@ import java.util.Optional;
         }
 
         // Obtener autor por ID
+        @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'AUTHOR')")
         @GetMapping("/{id}")
         public ResponseEntity<AuthorDTO> getAuthorById(@PathVariable Long id) {
             Optional<AuthorDTO> author = authorService.getAuthorById(id);
@@ -34,14 +38,17 @@ import java.util.Optional;
         }
 
        // Crear un nuevo autor a partir de un usuario existente
-           @PostMapping("/{userId}")
-           public ResponseEntity<AuthorDTO> createAuthor(@PathVariable Long userId) {
-               AuthorDTO newAuthor = authorService.createAuthor(userId);
+       // CREATE (Solo ADMIN puede crear autores a partir de usuarios)
+       @PreAuthorize("hasRole('ADMIN')")
+       @PostMapping("/{userId}")
+       public ResponseEntity<AuthorDTO> createAuthor(@PathVariable Long userId) {
+            AuthorDTO newAuthor = authorService.createAuthor(userId);
 
                return ResponseEntity.status(HttpStatus.CREATED).body(newAuthor);
            }
 
         // Actualizar autor existente
+        @PreAuthorize("hasRole('ADMIN')")
         @PatchMapping("/{id}")
         public ResponseEntity<AuthorDTO> updateAuthor(@PathVariable Long id, @RequestBody Author authorDetails) {
             AuthorDTO updatedAuthor = authorService.updateAuthor(id, authorDetails);
@@ -52,10 +59,18 @@ import java.util.Optional;
         }
 
         // Eliminar autor
+        @PreAuthorize("hasRole('ADMIN')")
         @DeleteMapping("/{id}")
         public ResponseEntity<Void> deleteAuthor(@PathVariable Long id) {
             authorService.deleteAuthor(id);
             return ResponseEntity.noContent().build();
+        }
+
+        // ENDPOINT para verificar el acceso de un usuario
+        @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'AUTHOR')")
+        @GetMapping("/status")
+        public ResponseEntity<String> getAuthorAccessStatus(Authentication authentication) {
+            return ResponseEntity.ok("✅ Estás autenticado como: " + authentication.getAuthorities());
         }
 
 
