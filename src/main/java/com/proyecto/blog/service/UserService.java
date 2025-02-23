@@ -32,6 +32,12 @@ public class UserService implements IUserSecService {
     private PasswordEncoder passwordEncoder; // Inyección del BCryptPasswordEncoder
 
     public UserSec registerUser(UserDTO userDTO, boolean isAuthor, String authorName) {
+
+        // Verificar que la lista de roles no sea null
+        if (userDTO.getRoles() == null) {
+            userDTO.setRoles(new ArrayList<>()); // Inicializar lista vacía
+        }
+        
         // Crear el usuario
         UserSec user = new UserSec();
         user.setUsername(userDTO.getUsername());
