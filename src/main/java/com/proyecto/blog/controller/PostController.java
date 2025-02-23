@@ -10,10 +10,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -63,10 +66,35 @@ public class PostController {
     }
     // Eliminar un post
 
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable Long id) {
         postService.deletePost(id);
         return ResponseEntity.noContent().build();
     }
+
+
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'AUTHOR')")
+    @GetMapping("/status")
+    public ResponseEntity<String> getUserStatus(Authentication authentication) {
+        // Obtenemos el usuario autenticado
+        String username = authentication.getName();
+
+        // Obtenemos los roles del usuario (filtramos solo los roles)
+        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+
+        // Filtramos para que solo se muestren roles (ignora permisos adicionales como 'READ')
+        List<String> roles = authorities.stream()
+                .filter(grantedAuthority -> grantedAuthority.getAuthority().startsWith("ROLE_"))
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        // Armamos el mensaje con el nombre de usuario y los roles
+        String responseMessage = String.format("✅ Usuario: %s\nRoles: %s",
+                username,
+                roles.toString());
+
+        return ResponseEntity.ok(responseMessage);
+    }
+
 }
