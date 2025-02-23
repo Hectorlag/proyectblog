@@ -8,6 +8,8 @@ import com.proyecto.blog.service.IAuthorService;
 import com.proyecto.blog.service.IPostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,6 +26,7 @@ public class PostController {
     private IAuthorService authorService;
 
     // Obtener todos los posts
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'AUTHOR')")
     @GetMapping
     public ResponseEntity<List<PostDTOandNameAuthor>> getAllPosts() {
         List<PostDTOandNameAuthor> posts = postService.getAllPosts();
@@ -31,6 +34,7 @@ public class PostController {
     }
 
     // Obtener un post por ID
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER', 'AUTHOR')")
     @GetMapping("/{id}")
     public ResponseEntity<PostDTOandNameAuthor> getPostById(@PathVariable Long id) {
         Optional<PostDTOandNameAuthor> post = postService.getPostById(id);
@@ -39,20 +43,24 @@ public class PostController {
     }
 
     // Crear un nuevo post
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @PostMapping
     public ResponseEntity<PostDTOandNameAuthor> createPost(@RequestBody Post post) {
         PostDTOandNameAuthor newPostDTO = postService.createPost(post);
         return ResponseEntity.ok(newPostDTO);
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUTHOR')")
     @PatchMapping("/{id}")
-    public ResponseEntity<PostDTOandNameAuthor> updatePost(@PathVariable Long id, @RequestBody Post postDetails) {
-        // Llamamos al servicio para actualizar el post
-        PostDTOandNameAuthor updatedPost = postService.updatePost(id, postDetails);
+    public ResponseEntity<PostDTOandNameAuthor> updatePost(
+            @PathVariable Long id,
+            @RequestBody Post postDetails,
+            Authentication authentication) {
 
-        return ResponseEntity.ok(updatedPost); // Retornamos el DTO con el post actualizado
+        PostDTOandNameAuthor updatedPost = postService.updatePost(id, postDetails, authentication);
+
+        return ResponseEntity.ok(updatedPost);
     }
-
     // Eliminar un post
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable Long id) {

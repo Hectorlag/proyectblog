@@ -8,7 +8,10 @@ import com.proyecto.blog.repository.IAuthorRepository;
 import com.proyecto.blog.repository.IPostRepository;
 import com.proyecto.blog.repository.IUserSecRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -66,12 +69,32 @@ public class PostService implements IPostService{
     }
     // Actualizar un post
     @Override
-    public PostDTOandNameAuthor updatePost(Long id, Post postDetails) {
+    public PostDTOandNameAuthor updatePost(Long id, Post postDetails, Authentication authentication) {
+        // Obtener el usuario autenticado
+        String username = authentication.getName();
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
         // Buscar el post con id y que no esté eliminado
         Post post = postRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
-        // Actualizar el título y contenido
+        // Si el usuario es ADMIN, permitir la actualización
+        if (isAdmin) {
+            return saveUpdatedPost(post, postDetails);
+        }
+
+        // Si el usuario es AUTHOR, validar que sea el dueño del post
+        if (post.getAuthor().getUser().getUsername().equals(username)) {
+            return saveUpdatedPost(post, postDetails);
+        }
+
+        // Si no es ni ADMIN ni el dueño, devolver FORBIDDEN
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para modificar este post");
+    }
+
+    // Método auxiliar para actualizar y guardar el post
+    private PostDTOandNameAuthor saveUpdatedPost(Post post, Post postDetails) {
         post.setTitle(postDetails.getTitle());
         post.setContent(postDetails.getContent());
 
