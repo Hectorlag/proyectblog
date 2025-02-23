@@ -37,7 +37,7 @@ public class UserService implements IUserSecService {
         if (userDTO.getRoles() == null) {
             userDTO.setRoles(new ArrayList<>()); // Inicializar lista vacía
         }
-        
+
         // Crear el usuario
         UserSec user = new UserSec();
         user.setUsername(userDTO.getUsername());

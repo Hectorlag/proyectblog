@@ -62,6 +62,8 @@ public class PostController {
         return ResponseEntity.ok(updatedPost);
     }
     // Eliminar un post
+
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable Long id) {
         postService.deletePost(id);
