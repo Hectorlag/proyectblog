@@ -1,5 +1,7 @@
 package com.proyecto.blog.service;
 
+import com.proyecto.blog.dto.PermissionDTO;
+import com.proyecto.blog.dto.PermissionResponseDTO;
 import com.proyecto.blog.model.Author;
 import com.proyecto.blog.model.Permission;
 import com.proyecto.blog.repository.IPermissionRepository;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PermissionService implements IPermissionService{
@@ -16,40 +19,49 @@ public class PermissionService implements IPermissionService{
     @Autowired
     private IPermissionRepository permissionRepository;
 
-
     @Override
-    public Permission createPermission(Permission permission) {
-        return permissionRepository.save(permission);
+    public PermissionResponseDTO createPermission(PermissionDTO permissionDTO) {
+        Permission permission = new Permission();
+        permission.setPermissionName(permissionDTO.getPermissionName());
+
+        Permission savedPermission = permissionRepository.save(permission);
+        return PermissionResponseDTO.fromEntity(savedPermission);
     }
 
     @Override
-    public Optional<Permission> getPermissionById(Long id) {
-        return permissionRepository.findByIdAndDeletedFalse(id);
-    }
-
-
-    @Override
-    public List<Permission> getAllPermissions() {
-        return permissionRepository.findByDeletedFalse();
-    }
-
-    @Override
-    public Permission updatePermission(Long id, Permission permissionDetails) {
-        return permissionRepository.findByIdAndDeletedFalse(id).map(permission -> {
-            permission.setPermissionName(permissionDetails.getPermissionName()); // Actualiza el nombre del permiso
-            return permissionRepository.save(permission);
-        }).orElseThrow(() -> new EntityNotFoundException("Permission not found with id: " + id));
-    }
-
-    @Override
-    public boolean deletePermission(Long id) {
+    public PermissionResponseDTO getPermissionById(Long id) {
         Permission permission = permissionRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new RuntimeException("Permission not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Permission not found with id: " + id));
 
-        permission.setDeleted(true); // Marcamos el permission como eliminado
-        permissionRepository.save(permission); // Guardamos el cambio en la base de datos
+        return PermissionResponseDTO.fromEntity(permission);
+    }
 
-        return true; // Indicamos que la operación fue exitosa
+    @Override
+    public List<PermissionResponseDTO> getAllPermissions() {
+        return permissionRepository.findByDeletedFalse()
+                .stream()
+                .map(PermissionResponseDTO::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public PermissionResponseDTO updatePermission(Long id, PermissionDTO permissionDTO) {
+        Permission permission = permissionRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new EntityNotFoundException("Permission not found with id: " + id));
+
+        permission.setPermissionName(permissionDTO.getPermissionName());
+        Permission updatedPermission = permissionRepository.save(permission);
+
+        return PermissionResponseDTO.fromEntity(updatedPermission);
+    }
+
+    @Override
+    public void deletePermission(Long id) {
+        Permission permission = permissionRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new EntityNotFoundException("Permission not found with id: " + id));
+
+        permission.setDeleted(true);
+        permissionRepository.save(permission);
     }
 
 
