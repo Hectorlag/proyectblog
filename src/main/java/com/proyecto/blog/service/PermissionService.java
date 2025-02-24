@@ -37,6 +37,11 @@ public class PermissionService implements IPermissionService{
     }
 
     @Override
+    public Optional<Permission> findPermissionEntityById(Long id) {
+        return permissionRepository.findByIdAndDeletedFalse(id);
+    }
+
+        @Override
     public List<PermissionResponseDTO> getAllPermissions() {
         return permissionRepository.findByDeletedFalse()
                 .stream()

@@ -47,7 +47,7 @@ public class RoleController {
 
         // Recuperar la lista de `Permission` por su id
         for (Permission p : role.getPermissionsList()) {
-            Permission foundPermission = permissionService.getPermissionById(p.getId()).orElse(null);
+            Permission foundPermission = permissionService.findPermissionEntityById(p.getId()).orElse(null);
             if (foundPermission != null) {
                 permissions.add(foundPermission);
             }
