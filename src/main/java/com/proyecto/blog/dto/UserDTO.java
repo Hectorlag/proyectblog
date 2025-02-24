@@ -21,7 +21,7 @@ public class UserDTO {
     @NotBlank(message = "La contraseña es obligatoria")
     @Size(min = 6, message = "La contraseña debe tener al menos 6 caracteres")
     private String password;
-    
+
     @Size(min = 3, max = 100, message = "El nombre del autor debe tener entre 3 y 100 caracteres")
     private String authorName;
     private boolean isAuthor;  // Indicador de si el usuario es un AUTHOR

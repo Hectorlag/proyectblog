@@ -82,7 +82,7 @@ public class UserService implements IUserSecService {
     }
 
     @Override
-    public UserSec updateUserSec(Long id, UserDTO userDTO, boolean isAuthor) {
+    public UserSec updateUserSec(Long id, UserDTO userDTO, boolean isAuthor, String authorName) {
         UserSec existingUser = userSecRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
@@ -94,7 +94,7 @@ public class UserService implements IUserSecService {
             existingUser.setPassword(this.encriptPassword(userDTO.getPassword()));
         }
 
-        //  Asegurar que el usuario siempre tenga al menos un rol
+        // Asegurar que el usuario siempre tenga al menos un rol
         Role newRole = roleRepository.findByRole(isAuthor ? "AUTHOR" : "USER")
                 .orElseThrow(() -> new RoleNotFoundException("Rol not found"));
 
@@ -107,13 +107,22 @@ public class UserService implements IUserSecService {
         existingUser.getRolesList().clear();
         existingUser.getRolesList().add(newRole);
 
-        //  Gestionar la relación con `Author`
+        // Gestionar la relación con `Author`
         if (isAuthor) {
             if (existingUser.getAuthor() == null) {
+                if (authorName == null || authorName.isBlank()) {
+                    throw new IllegalArgumentException("El nombre del autor es obligatorio");
+                }
                 Author author = new Author();
                 author.setUser(existingUser);
+                author.setName(authorName);
                 iAuthorRepository.save(author);
                 existingUser.setAuthor(author);
+            } else {
+                // Si el usuario ya tiene un author, solo actualizamos el nombre
+                if (authorName != null && !authorName.isBlank()) {
+                    existingUser.getAuthor().setName(authorName);
+                }
             }
         } else {
             existingUser.setAuthor(null); // Si ya no es autor, eliminamos la relación
@@ -121,6 +130,7 @@ public class UserService implements IUserSecService {
 
         return userSecRepository.save(existingUser);
     }
+
 
     @Override
     public boolean deleteUserSec(Long id) {

@@ -66,9 +66,10 @@ public class UserController {
     public ResponseEntity<UserSecResponseDTO> updateUser(
             @PathVariable Long id,
             @RequestBody UserDTO userDTO,
-            @RequestParam(required = false, defaultValue = "false") boolean isAuthor) {
+            @RequestParam(required = false, defaultValue = "false") boolean isAuthor,
+            @RequestParam(required = false) String authorName) {
 
-        UserSec updatedUser = userService.updateUserSec(id, userDTO, isAuthor);
+        UserSec updatedUser = userService.updateUserSec(id, userDTO, isAuthor, authorName);
         return ResponseEntity.ok(UserSecResponseDTO.fromUserSec(updatedUser));
     }
 
