@@ -20,13 +20,14 @@ public class PermissionController {
     public PermissionController(IPermissionService permissionService) {
         this.permissionService = permissionService;
     }
-
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<Permission>> getAllPermissions() {
         List<Permission> permissions = permissionService.getAllPermissions();
         return ResponseEntity.ok(permissions);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<Permission> getPermissionById(@PathVariable Long id) {
         Optional<Permission> permission = permissionService.getPermissionById(id);
@@ -34,18 +35,21 @@ public class PermissionController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<Permission> createPermission(@RequestBody Permission permission) {
         Permission newPermission = permissionService.createPermission(permission);
         return ResponseEntity.ok(newPermission);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<Permission> updatePermission(@PathVariable Long id, @RequestBody Permission permissionDetails) {
         Permission updatedPermission = permissionService.updatePermission(id, permissionDetails);
         return ResponseEntity.ok(updatedPermission);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePermission(@PathVariable Long id) {
         permissionService.deletePermission(id);
