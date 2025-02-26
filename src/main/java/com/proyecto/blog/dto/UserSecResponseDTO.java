@@ -1,5 +1,6 @@
 package com.proyecto.blog.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.proyecto.blog.model.Role;
 import com.proyecto.blog.model.UserSec;
 import lombok.AllArgsConstructor;
@@ -18,6 +19,7 @@ public class UserSecResponseDTO {
 
     private String username;
     private Set<String> rolesList;
+    @JsonInclude(JsonInclude.Include.NON_NULL)  // Evita que aparezca si es null
     private Long authorId; // Si el usuario es autor, devuelve solo su ID
 
     // Método estático para convertir de UserSec a UserSecResponseDTO
