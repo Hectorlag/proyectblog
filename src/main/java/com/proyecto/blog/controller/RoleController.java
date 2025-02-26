@@ -1,13 +1,9 @@
 package com.proyecto.blog.controller;
 
-import com.proyecto.blog.dto.RoleRequestDTO;
-import com.proyecto.blog.dto.RoleResponseDTO;
 import com.proyecto.blog.model.Permission;
 import com.proyecto.blog.model.Role;
 import com.proyecto.blog.service.IPermissionService;
 import com.proyecto.blog.service.IRoleService;
-import jakarta.validation.Valid;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,7 +13,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("api/roles")
@@ -25,68 +20,57 @@ public class RoleController {
 
     private final IRoleService roleService;
     private final IPermissionService permissionService;
-    private final ModelMapper modelMapper;
 
     @Autowired
-    public RoleController(IRoleService roleService, IPermissionService permissionService, ModelMapper modelMapper) {
+    public RoleController(IRoleService roleService, IPermissionService permissionService) {
         this.roleService = roleService;
         this.permissionService = permissionService;
-        this.modelMapper = modelMapper;
     }
-
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    public ResponseEntity<List<RoleResponseDTO>> getAllRoles() {
+    public ResponseEntity<List<Role>> getAllRoles() {
         List<Role> roles = roleService.getAllRoles();
-        List<RoleResponseDTO> roleDTOs = roles.stream()
-                .map(role -> modelMapper.map(role, RoleResponseDTO.class))
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(roleDTOs);
+        return ResponseEntity.ok(roles);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
-    public ResponseEntity<RoleResponseDTO> getRoleById(@PathVariable Long id) {
+    public ResponseEntity<Role> getRoleById(@PathVariable Long id) {
         Optional<Role> role = roleService.getRoleById(id);
-        return role.map(r -> ResponseEntity.ok(modelMapper.map(r, RoleResponseDTO.class)))
+        return role.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
-
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<RoleResponseDTO> createRole(@Valid @RequestBody RoleRequestDTO roleRequest) {
-        Set<Permission> permissions = roleRequest.getPermissionIds().stream()
-                .map(permissionService::findPermissionEntityById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toSet());
+    public ResponseEntity<Role> createRole(@RequestBody Role role) {
+        Set<Permission> permissions = new HashSet<>();
 
-        Role role = new Role();
-        role.setRole(roleRequest.getRole());
+        // Recuperar la lista de `Permission` por su id
+        for (Permission p : role.getPermissionsList()) {
+            Permission foundPermission = permissionService.findPermissionEntityById(p.getId()).orElse(null);
+            if (foundPermission != null) {
+                permissions.add(foundPermission);
+            }
+        }
+
         role.setPermissionsList(permissions);
-
         Role newRole = roleService.createRole(role);
-        return ResponseEntity.ok(modelMapper.map(newRole, RoleResponseDTO.class));
+        return ResponseEntity.ok(newRole);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}")
-    public ResponseEntity<RoleResponseDTO> updateRole(@PathVariable Long id, @Valid @RequestBody RoleRequestDTO roleRequest) {
+    public ResponseEntity<Role> updateRole(@PathVariable Long id, @RequestBody Role roleDetails) {
         Role existingRole = roleService.getRoleById(id).orElse(null);
         if (existingRole == null) {
             return ResponseEntity.notFound().build();
         }
 
-        existingRole.setRole(roleRequest.getRole());
-        Set<Permission> permissions = roleRequest.getPermissionIds().stream()
-                .map(permissionService::findPermissionEntityById)
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toSet());
-        existingRole.setPermissionsList(permissions);
+        existingRole.setRole(roleDetails.getRole());
+        existingRole.setPermissionsList(roleDetails.getPermissionsList());
 
         Role updatedRole = roleService.updateRole(id, existingRole);
-        return ResponseEntity.ok(modelMapper.map(updatedRole, RoleResponseDTO.class));
+        return ResponseEntity.ok(updatedRole);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -96,4 +80,3 @@ public class RoleController {
         return ResponseEntity.noContent().build();
     }
 }
-
