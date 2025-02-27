@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @AllArgsConstructor
@@ -18,6 +19,6 @@ public class RoleRequestDTO {
         private String role;
 
         @NotEmpty(message = "Debe asignar al menos un permiso")
-        private Set<Long> permissionIds;
+        private Set<Long> permissionIds = new HashSet<>(); // Inicializado como un Set vacío
 
 }
