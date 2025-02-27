@@ -7,6 +7,7 @@ import com.proyecto.blog.model.Role;
 import com.proyecto.blog.model.UserSec;
 import com.proyecto.blog.service.IRoleService;
 import com.proyecto.blog.service.IUserSecService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,23 +50,20 @@ public class UserController {
         return ResponseEntity.ok(UserSecResponseDTO.fromUserSec(user));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<UserSecResponseDTO> createUser(
-            @RequestBody UserDTO userDTO,
+            @Valid @RequestBody UserDTO userDTO,
             @RequestParam boolean isAuthor,
             @RequestParam(required = false) String authorName) {
 
         UserSec newUser = userService.registerUser(userDTO, isAuthor, authorName);
-
         return ResponseEntity.ok(UserSecResponseDTO.fromUserSec(newUser));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}")
     public ResponseEntity<UserSecResponseDTO> updateUser(
             @PathVariable Long id,
-            @RequestBody UserDTO userDTO,
+            @Valid @RequestBody UserDTO userDTO,
             @RequestParam(required = false, defaultValue = "false") boolean isAuthor,
             @RequestParam(required = false) String authorName) {
 
