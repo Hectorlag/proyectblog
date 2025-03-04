@@ -31,11 +31,14 @@ public class UserService implements IUserSecService {
     @Autowired
     private PasswordEncoder passwordEncoder; // Inyección del BCryptPasswordEncoder
 
-    public UserSec registerUser(UserDTO userDTO, boolean isAuthor, String authorName) {
+    public UserSec registerUser(UserDTO userDTO, boolean isAuthor, String authorName, boolean isAdminRequest) {
 
-        // Verificar que la lista de roles no sea null
-        if (userDTO.getRoles() == null) {
-            userDTO.setRoles(new ArrayList<>()); // Inicializar lista vacía
+        // Si el registro NO es hecho por un ADMIN, restringimos los roles permitidos
+        if (!isAdminRequest) {
+            userDTO.getRoles().removeIf(role -> role.equalsIgnoreCase("ADMIN"));
+            if (userDTO.getRoles().isEmpty()) {
+                userDTO.getRoles().add("USER"); // Si no especifica roles, asignamos USER por defecto
+            }
         }
 
         // Crear el usuario
@@ -70,6 +73,7 @@ public class UserService implements IUserSecService {
 
         return savedUser;
     }
+
 
     @Override
     public Optional<UserSec> getUserSecById(Long id) {

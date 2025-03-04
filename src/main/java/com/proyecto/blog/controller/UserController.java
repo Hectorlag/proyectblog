@@ -50,14 +50,18 @@ public class UserController {
         return ResponseEntity.ok(UserSecResponseDTO.fromUserSec(user));
     }
 
+    // Creación de usuario (solo ADMIN)
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<UserSecResponseDTO> createUser(
-            @Valid @RequestBody UserDTO userDTO,
-            @RequestParam boolean isAuthor,
-            @RequestParam(required = false) String authorName) {
+    public ResponseEntity<UserSecResponseDTO> createUser(@Valid @RequestBody UserDTO userDTO) {
+        UserSec newUser = userService.registerUser(userDTO, userDTO.isAuthor(), userDTO.getAuthorName(), true);
+        return ResponseEntity.ok(UserSecResponseDTO.fromUserSec(newUser));
+    }
 
-        UserSec newUser = userService.registerUser(userDTO, isAuthor, authorName);
+    // Registro público (solo USER o AUTHOR)
+    @PostMapping("/register")
+    public ResponseEntity<UserSecResponseDTO> registerUser(@Valid @RequestBody UserDTO userDTO) {
+        UserSec newUser = userService.registerUser(userDTO, userDTO.isAuthor(), userDTO.getAuthorName(), false);
         return ResponseEntity.ok(UserSecResponseDTO.fromUserSec(newUser));
     }
 
