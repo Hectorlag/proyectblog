@@ -50,6 +50,7 @@ public class UserController {
         return ResponseEntity.ok(UserSecResponseDTO.fromUserSec(user));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<UserSecResponseDTO> createUser(
             @Valid @RequestBody UserDTO userDTO,
@@ -60,6 +61,7 @@ public class UserController {
         return ResponseEntity.ok(UserSecResponseDTO.fromUserSec(newUser));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/{id}")
     public ResponseEntity<UserSecResponseDTO> updateUser(
             @PathVariable Long id,
