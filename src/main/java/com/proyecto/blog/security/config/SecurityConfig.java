@@ -2,6 +2,7 @@ package com.proyecto.blog.security.config;
 
 import com.proyecto.blog.security.config.filter.JwtTokenValidator;
 import com.proyecto.blog.utils.JwtUtils;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,23 +19,24 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true) // Habilitar @PreAuthorize
+@RequiredArgsConstructor
 public class SecurityConfig {
-
-    @Autowired
-    private JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity
                 .csrf(csrf -> csrf.disable())
-                .httpBasic(Customizer.withDefaults()) //se usa cuando solo vas a logear con usuarios y contraseñas
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // No usa sesiones
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login").permitAll()  // Permitir acceso sin autenticación a /auth/login
-                        .anyRequest().authenticated()  // Requiere autenticación para cualquier otro endpoint
+                        .requestMatchers("/auth/login", "/api/users/register", "/oauth2/authorization/**").permitAll()
+                        .anyRequest().authenticated()
                 )
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuth2LoginSuccessHandler) // Genera JWT al autenticar con GitHub/Google
+                )
+                .addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class) // Valida JWT
                 .build();
     }
 

@@ -54,7 +54,7 @@ public class UserService implements IUserSecService {
         Set<Role> roles = new HashSet<>();
         for (String roleName : userDTO.getRoles()) {
             Role role = roleRepository.findByRole(roleName)
-                    .orElseThrow(() -> new RoleNotFoundException("Rol no encontrado: " + roleName));
+                    .orElseThrow(() -> new RoleNotFoundException("Rol not found: " + roleName));
             roles.add(role);
         }
         user.setRolesList(roles);
