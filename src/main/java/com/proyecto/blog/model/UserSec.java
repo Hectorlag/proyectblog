@@ -21,7 +21,7 @@ public class UserSec {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(unique = true)
+    @Column(unique = true, nullable = true)
     private String username;
     private String password;
     private boolean enabled;
